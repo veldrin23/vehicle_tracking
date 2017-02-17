@@ -1,17 +1,32 @@
-from vehicle_tracking_class_model import *
+# fig = plt.figure(figsize=(12, 5));
+# fig.add_subplot(1, 2, 1)
+# matplotlib.rc('xtick', labelsize=20)
+# matplotlib.rc('ytick', labelsize=20)
+# plt.imshow(rand_img)
+# plt.title('Original Image:\n', fontsize=20);
+# fig.add_subplot(1, 2, 2)
+# plt.imshow(hog_image, cmap='gray')
+# plt.title('HOG Visualization:\n', fontsize=20);
 
-color_space = 'HSV'  # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
-orient = 9  # HOG orientations
-pix_per_cell = 8  # HOG pixels per cell
-cell_per_block = 2  # HOG cells per block
-hog_channel = 'ALL'  # Can be 0, 1, 2, or "ALL"
-spatial_size = (16, 16)  # Spatial binning dimensions
-hist_bins = 16  # Number of histogram bins
-spatial_feat = True  # Spatial features on or off
-hist_feat = True  # Histogram features on or off
-hog_feat = True  # HOG features on or off
 
-# train model for matching cars
+import argparse
+import base64
+import json
+import cv2
+import numpy as np
 
-svc, X_scaler = train_model(color_space, orient, pix_per_cell, cell_per_block, hog_channel, spatial_size, hist_bins,
-                            spatial_feat, hist_feat, hog_feat)
+import time
+from PIL import Image
+from PIL import ImageOps
+
+from io import BytesIO
+import matplotlib.image as mpimg
+from scipy.misc.pilutil import imresize
+from random import uniform
+from keras.models import model_from_json
+from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array
+f = open('model.json', 'r')
+# model = model_from_json(json.loads(open('model.json', 'r')))
+
+# float(model.predict(transformed_image_array, batch_size=1))
+
