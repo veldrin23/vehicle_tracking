@@ -4,8 +4,8 @@ from sklearn.svm import LinearSVC
 from sklearn.preprocessing import StandardScaler
 from features import *
 from sklearn.model_selection import train_test_split
+import pickle
 
-from sklearn.externals import joblib
 
 def train_model(color_space, orient, pix_per_cell, cell_per_block, hog_channel, spatial_size, hist_bins,
                             spatial_feat, hist_feat, hog_feat):
@@ -30,8 +30,6 @@ def train_model(color_space, orient, pix_per_cell, cell_per_block, hog_channel, 
                                        hog_channel=hog_channel, spatial_feat=spatial_feat,
                                        hist_feat=hist_feat, hog_feat=hog_feat)
 
-
-
     X = np.vstack((car_features, notcar_features)).astype(np.float64)
     # Fit a per-column scaler
     X_scaler = StandardScaler().fit(X)
@@ -46,19 +44,12 @@ def train_model(color_space, orient, pix_per_cell, cell_per_block, hog_channel, 
     X_train, X_test, y_train, y_test = train_test_split(
         scaled_X, y, test_size=0.2, random_state=rand_state)
 
-
-
     svc = LinearSVC()
-    # clf = CalibratedClassifierCV(svc)
-
 
     svc.fit(X_train, y_train)
     print('Test Accuracy of SVC = ', round(svc.score(X_test, y_test), 4))
-
-
-    joblib.dump(svc, 'models/classifier.pkl')
-    # joblib.dump(clf, './models/calibrated.pkl')
-    joblib.dump(X_scaler, 'models/scaler.pkl')
-
-    return svc, X_scaler
+    with open('model.pickle', 'wb') as p:
+        pickle.dump((svc, X_scaler), p)
+        p.close()
+    # return svc, X_scaler
 

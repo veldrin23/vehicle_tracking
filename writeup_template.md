@@ -1,27 +1,19 @@
-#Vehicle Detection Project**
+# Vehicle detection writeup
 
-The goals / steps of this project are the following:
+## Feature extraction
+I used spatial binning, color histograms and HOG feature extraction to gain features
+from the images. I played around with different color conversions to use for HOG extraction,
+and in the end found that YCrCb's first layer (the luma) gives the best results. Initally I
+used all three layers for the HOG transformation, but it adds too much computation time. The model's test
+accuracy remains very high even when just using the first layer (98% plus accurate)
 
-* Perform a Histogram of Oriented Gradients (HOG) feature extraction on a labeled training set of images and train a classifier Linear SVM classifier
-* Optionally, you can also apply a color transform and append binned color features, as well as histograms of color, to your HOG feature vector. 
-* Note: for those first two steps don't forget to normalize your features and randomize a selection for training and testing.
-* Implement a sliding-window technique and use your trained classifier to search for vehicles in images.
-* Run your pipeline on a video stream (start with the test_video.mp4 and later implement on full project_video.mp4) and create a heat map of recurring detections frame by frame to reject outliers and follow detected vehicles.
-* Estimate a bounding box for vehicles detected.
+### Color histograms
+The color histogram function (under features.py lines 12 to 17) extracts a color hisotgram
+of the image in the RGB space. I chose 16 bins for the images
+### Spatial features
 
-[//]: # (Image References)
-    
+### HOG features
 
-
-## [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points
-###Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
-
----
-###Writeup / README
-
-####1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.  You can submit your writeup as markdown or pdf.  [Here](https://github.com/udacity/CarND-Vehicle-Detection/blob/master/writeup_template.md) is a template writeup for this project you can use as a guide and a starting point.  
-
-You're reading it!
 
 ###Histogram of Oriented Gradients (HOG)
 
