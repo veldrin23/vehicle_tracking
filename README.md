@@ -1,33 +1,126 @@
-# Vehicle Detection
-[![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
+# Vehicle detection writeup
+
+## Feature extraction
+I used spatial binning, color histograms and HOG feature extraction to gain features
+from the images. I played around with different color conversions to use for HOG extraction,
+and in the end found that YCrCb's first layer (the luma) gives the best results. Initially I
+used all three layers for the HOG transformation, but it adds too much computation time. The model's test
+accuracy remains very high even when just using the first layer (98% plus accurate).
+I used the Sandpit2.py file to play around with the parameters for the filters. Sandpit2.py creates
+the plots and images, while the parameters get tuned in P5_project.py.
+
+### Color histograms
+The color histogram function (under features.py lines 12 to 17) extracts a color histogram
+of the image in the RGB space. Initially I used 16 bins for the images, but after playing around I realized
+I can decrease the number of bins to 6, without losing accuracy on my test set.
+
+Below are three examples of what the color histogram looks like for images containing cars and images that don't.
+
+![hist1](images/color_hist_1.png)
+
+![hist2](images/color_hist_2.png)
+
+![hist3](images/color_hist_3.png)
+
+### Spatial features
+Next step is to extract spatial features, using the bin_spatial function in features.py, lines 7 tot 9. In essence this just bins the pixel values
+for each image. Initially I used 32, but I lowered it down to 16 for the sake of computation time
+(and negligible loss of accuracy for the test set of the model).
+
+Below are three images of spatial binning.
+
+![spat1](images/spatial_1.png)
+
+![spat2](images/spatial_2.png)
+
+![spat3](images/spatial_3.png)
 
 
-In this project, your goal is to write a software pipeline to detect vehicles in a video (start with the test_video.mp4 and later implement on full project_video.mp4), but the main output or product we want you to create is a detailed writeup of the project.  Check out the [writeup template](https://github.com/udacity/CarND-Vehicle-Detection/blob/master/writeup_template.md) for this project and use it as a starting point for creating your own writeup.  
+### HOG features
+The HOG features are the real heroes of the show. Spatial binning and color histograms are
+like Alfred and Robin, while HOG features are Batman. In essence, HOG features gives a summary of the orientation
+ is block of pixels, the function can be found in features.py, lines 20 to 36. In a way, it shows an aggregated direction of the edges. As mentioned
+ above, I use the luma layer of YCrCb, and I take 30 pixels per block (up from 9 from the lecture).
 
-Creating a great writeup:
----
-A great writeup should include the rubric points as well as your description of how you addressed each point.  You should include a detailed description of the code used in each step (with line-number references and code snippets where necessary), and links to other supporting documents or external references.  You should include images in your writeup to demonstrate how your code works with examples.  
+A lower value for pixels per block gives a much clearer image of what's going on in the image. Below is an
+image with a pixel per block value set to 2.
 
-All that said, please be concise!  We're not looking for you to write a book here, just a brief description of how you passed each rubric point, and references to the relevant code :). 
+![hog0](images/HOG0.png)
 
-You can submit your writeup in markdown or use another method and submit a pdf instead.
+Intuitively this image would be much more useful for image extraction, but I found that increasing the pixels per
+block to up to 30 increases the pipe's capability of finding windows. You can still see there's a difference between car and not-car
+images in the three examples below.
 
-The Project
----
+![hog1](images/HOG1.png)
 
-The goals / steps of this project are the following:
+![hog2](images/HOG2.png)
 
-* Perform a Histogram of Oriented Gradients (HOG) feature extraction on a labeled training set of images and train a classifier Linear SVM classifier
-* Optionally, you can also apply a color transform and append binned color features, as well as histograms of color, to your HOG feature vector. 
-* Note: for those first two steps don't forget to normalize your features and randomize a selection for training and testing.
-* Implement a sliding-window technique and use your trained classifier to search for vehicles in images.
-* Run your pipeline on a video stream (start with the test_video.mp4 and later implement on full project_video.mp4) and create a heat map of recurring detections frame by frame to reject outliers and follow detected vehicles.
-* Estimate a bounding box for vehicles detected.
+![hog3](images/HOG3.png)
 
-Here are links to the labeled data for [vehicle](https://s3.amazonaws.com/udacity-sdc/Vehicle_Tracking/vehicles.zip) and [non-vehicle](https://s3.amazonaws.com/udacity-sdc/Vehicle_Tracking/non-vehicles.zip) examples to train your classifier.  These example images come from a combination of the [GTI vehicle image database](http://www.gti.ssr.upm.es/data/Vehicle_database.html), the [KITTI vision benchmark suite](http://www.cvlibs.net/datasets/kitti/), and examples extracted from the project video itself.   You are welcome and encouraged to take advantage of the recently released [Udacity labeled dataset](https://github.com/udacity/self-driving-car/tree/master/annotations) to augment your training data.  
 
-Some example images for testing your pipeline on single frames are located in the `test_images` folder.  To help the reviewer examine your work, please save examples of the output from each stage of your pipeline in the folder called `ouput_images`, and include them in your writeup for the project by describing what each image shows.    The video called `project_video.mp4` is the video your pipeline should work well on.  
+So in the end I settled with 30 pixels per block, 2 cells per block and I only used the 1st layer of the YCrCb color translation.
 
-**As an optional challenge** Once you have a working pipeline for vehicle detection, add in your lane-finding algorithm from the last project to do simultaneous lane-finding and vehicle detection!
+Below are plots of the HOG features
 
-**If you're feeling ambitious** (also totally optional though), don't stop there!  We encourage you to go out and take video of your own, and show us how you would implement this project on a new video!
+![hogf1](images/HOG_f1.png)
+
+![hogf2](images/HOG_f2.png)
+
+![hogf3](images/HOG_f3.png)
+
+
+## Modelling
+
+I used the linear SVM classification model as a classifier. I tried using RandomForest and AdaBoost as well, but they give the same accuracy
+ while taking too much processing time. I wanted to be fancy, but SVM proved to be the better choice :)
+
+## Sliding window search
+I set up three 'hot zones' for my sliding windows (see P5_project.py ine 12). The hot zones ignore the top half of the image (anything above the
+ road in the image) and a bit of the image below (part of the driver's car). The hot zones only uses smaller windows for areas close to the middle -
+ where the cars would appear smaller.
+
+
+## The Pipeline
+ The pipeline's process is as follows:
+
+ 1. Normalize[0,1] the image (since we trained the model using PNG files which as a range between 0 and 1)
+ 2. Get a list of all the windows (created by slide_window in the windows.py file)
+ 3. Test if each window contains a car
+ 4. If it contains a car, add 1 to the window's area on a blank image - this will create a heatmap
+ 5. Apply a threshold (I chose 4) to only show areas which are 'warm' enough
+ 6. Use the label function (from scipy) to find the areas where we can draw boxes)
+ 7. Draw boxes around these areas using draw_labeled_bboxes from P_5_project.py line 86)
+
+Below are images showing the different steps, applied on the test images.
+
+* Top left: original image
+* Top right: hot boxes, where the SVM model classified the window as having a car in it
+* Bottom left: Heatmap of the hotboxes
+* Bottom right: Boxes drawn around the heat blops after the threshold was applied
+
+![test1](images/test1.png)
+
+![test2](images/test2.png)
+
+![test3](images/test3.png)
+
+![test4](images/test4.png)
+
+
+This pipeline is applied to the project video in test_on_video.py.
+
+Here's a link to the output video for this pipeline: [video](https://youtu.be/jEqmMY1mAzw)
+
+
+## Discussion
+The main challenge I faced was the abundance of false positives. For a while I tried increasing
+the number of features for the classification model (which made things much slower), but after I tried a higher pixel per
+cell value for the HOG filter I managed to lower it by quite a bit.
+
+One way to fix this problem is to have track heat blops from frame to frame as well. This
+can be done using a warmth layer, which takes the average of the past n heatmaps and use that to
+find labels.
+
+
+
+

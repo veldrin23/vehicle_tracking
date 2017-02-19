@@ -4,18 +4,16 @@ from scipy.ndimage.measurements import label
 import pickle
 from features import *
 from windows import *
-from sklearn.externals import joblib
-
 
 class MajorPipe:
     def __init__(self):
-        self.hot_zones = [(340, 700, 128), (380, 600, 128), (380, 480, 64)]
+        self.hot_zones = [(340, 700, 192), (380, 600, 128), (380, 480, 64)]
         self.color_space = 'YCrCb'  # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
         self.orient = 9  # HOG orientations
-        self.pix_per_cell = 36  # HOG pixels per cell
+        self.pix_per_cell = 30  # HOG pixels per cell
         self.cell_per_block = 2  # HOG cells per block
         self.hog_channel = 0  # Can be 0, 1, 2, or "ALL"
-        self.spatial_size = (32, 32)  # Spatial binning dimensions
+        self.spatial_size = (16, 16)  # Spatial binning dimensions
         self.hist_bins = 6  # Number of histogram bins
         self.spatial_feat = True  # Spatial features on or off
         self.hist_feat = True  # Histogram features on or off
@@ -24,7 +22,7 @@ class MajorPipe:
         self.svc = None
         self.X_scaler = None
         self.warmth = None
-        self.train_model = True
+        self.train_model = False
 
     def search_windows(self, img, windows, clf, scaler, hist_bins, color_space='RGB',
                        spatial_size=(32, 32), orient=9,
@@ -58,7 +56,7 @@ class MajorPipe:
         hot_windows = []
 
         for hy_min, hy_max, size in hot_zones:
-            windows = slide_window(image, x_start_stop=[None, None], y_start_stop=[hy_min, hy_max],
+            windows = slide_window(image, x_start_stop=[640, None], y_start_stop=[hy_min, hy_max],
                                    xy_window=(size, size), xy_overlap=(0.75, 0.75))
 
             hw = self.search_windows(image, windows, svc, X_scaler, color_space=self.color_space,
@@ -134,7 +132,7 @@ class MajorPipe:
             plt.subplot(223)
             plt.imshow(heatmap, cmap='gist_heat')
 
-        final_map = self.apply_threshold(heatmap, 7)
+        final_map = self.apply_threshold(heatmap, 4)
 
         labels = label(final_map)
 
@@ -148,9 +146,9 @@ class MajorPipe:
         return out
 
 
-# fok = mpimg.imread('test_images/test4.jpg')
-#
-# X = MajorPipe()
-# X.get_model()
-# X.pipe(fok, show=True)
-#
+fok = mpimg.imread('test_images/test4.jpg')
+
+X = MajorPipe()
+X.get_model()
+X.pipe(fok, show=True)
+

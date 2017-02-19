@@ -54,11 +54,6 @@ hist_notcar = single_img_features(random_notcar, color_space=color_space, spatia
                         spatial_feat=False, hist_feat=True, hog_feat=False)
 
 
-
-
-
-
-
 _c, hog_car0 = hog(YCrCb_car[:, :, 0], orientations=orient,
                                   pixels_per_cell=(pix_per_cell, pix_per_cell),
                                   cells_per_block=(cell_per_block, cell_per_block),
@@ -71,7 +66,6 @@ _nc, hog_notcar0 = hog(YCrCb_notcar[:, :, 0], orientations=orient,
                                   transform_sqrt=True,
                                   visualise=True, feature_vector=True)
 
-
 plt.subplot(221)
 plt.imshow(random_car)
 plt.title('Car image')
@@ -81,13 +75,13 @@ plt.imshow(random_notcar)
 plt.title('Not-car image')
 plt.xticks([], [])
 plt.subplot(223)
-plt.plot(spatial_car, lw=1, c='dodgerblue')
+plt.plot(_c, lw=1, c='dodgerblue')
 # plt.imshow(hog_car0, cmap='gnuplot2')
+plt.title('HOG features of car')
 plt.subplot(224)
-plt.title('HOG transformation of car')
-plt.plot(spatial_notcar, lw=1, c='firebrick')
+plt.plot(_nc, lw=1, c='firebrick')
 # plt.imshow(hog_notcar0, cmap='gnuplot2')
-plt.title('HOG transformation of not-car')
+plt.title('HOG features of not-car')
 
 
 plt.show()
