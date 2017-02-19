@@ -31,9 +31,9 @@ Below are three images of spatial binning.
 
 ![spat1](images/spatial_1.png)
 
-![spat2](images/spatial_2.png)
+![spat2](images/spatial2.png)
 
-![spat3](images/spatial_3.png)
+![spat3](images/spatial3.png)
 
 
 ### HOG features
